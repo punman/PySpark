@@ -1,0 +1,23 @@
+from pyspark import SparkContext,SparkConf
+import collections
+
+conf= SparkConf().setMaster("local").setAppName("FriendsByAge")
+sc=SparkContext(conf=conf)
+
+def parseline(line):
+    spl=line.split(',')
+    age=int(spl[2])
+    friends=int(spl[3])
+    return (age,friends)
+
+line=sc.textFile('file:///SparkCourse/fakefriends.csv')
+
+rdd=line.map(parseline)
+totFri=rdd.mapValues(lambda x: (x,1)).reduceByKey(lambda x,y: (x[0]+y[0],x[1]+y[1]))
+avgFri=totFri.mapValues(lambda x: x[0]/x[1])
+result=avgFri.collect()
+for i in result:
+    print i
+    
+print '---------------------------------------------------------------'
+print avgFri
