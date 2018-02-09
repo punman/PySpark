@@ -1,0 +1,28 @@
+from pyspark import SparkConf,SparkContext
+import collections
+
+conf=SparkConf().setMaster("local").setAppName("MinTemp")
+sc=SparkContext(conf=conf)
+
+
+def parsedLine(text):
+    pl=text.split(',')
+    stID=pl[0]
+    entry=pl[2]
+    temp= float(pl[3])*0.1*(9.0/5.0)+32
+    return (stID,entry,temp)
+
+text=sc.textFile('C:/SparkCourse/1800.csv')
+spl=text.map(parsedLine)
+
+tm=spl.filter(lambda x : 'TMIN' in x[1])
+enout=tm.map(lambda x: (x[0],x[2]))
+gtm=enout.reduceByKey(lambda x,y: min(x,y))
+result=gtm.collect()
+
+
+
+
+
+for i in result:
+    print(i[0]+'\t{:.2f}F').format(i[1])
