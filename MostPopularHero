@@ -1,0 +1,25 @@
+from pyspark import SparkContext,SparkConf
+
+conf =  SparkConf().setMaster('local').setAppName('mostpophero')
+sc = SparkContext(conf=conf)
+
+def occur(line):
+    element = line.split()
+    return (int(element[0]),len(element)-1)
+    
+def parsing(line):
+    field = line.split('\"')
+    return (int(field[0]),field[1].encode('utf8'))
+    
+name = sc.textFile('C:/SparkCourse/Marvel-Names.txt')
+nameRDD = name.map(parsing)
+
+oc = sc.textFile('C:/SparkCourse/Marvel-Graph.txt')
+pair = oc.map(occur).reduceByKey(lambda x,y: x+y).map(lambda x: (x[1],x[0]))
+pophero = pair.max()
+
+mpop = nameRDD.lookup(pophero[1])[0]
+
+print('------------------------------------------------------------')
+print(mpop+' is the most popular hero with appearance of '+str(pophero[0])+' times')
+print('------------------------------------------------------------')
